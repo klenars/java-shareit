@@ -19,8 +19,8 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleFieldError(final EmailUniqueException exception) {
+    public ErrorResponse handleFieldError(final FieldUniqueException exception) {
         log.warn(exception.getMessage());
-        return new ErrorResponse("Email unique error!", exception.getMessage());
+        return new ErrorResponse("Field unique error!", exception.getMessage());
     }
 }
