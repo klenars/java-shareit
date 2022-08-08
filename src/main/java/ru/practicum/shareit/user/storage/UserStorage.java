@@ -1,4 +1,8 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.storage;
+
+import ru.practicum.shareit.user.User;
+
+import java.util.List;
 
 public interface UserStorage {
 
@@ -9,4 +13,6 @@ public interface UserStorage {
     User update(long userId, User user);
 
     void delete(long userId);
+
+    List<User> getAll();
 }
