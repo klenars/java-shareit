@@ -23,4 +23,18 @@ public class ErrorHandler {
         log.warn(exception.getMessage());
         return new ErrorResponse("Field unique error!", exception.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleUserValidationError(final UserValidationException exception) {
+        log.warn(exception.getMessage());
+        return new ErrorResponse("User validation error!", exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleUserDoesntExistError(final UserDoesntExistException exception) {
+        log.warn(exception.getMessage());
+        return new ErrorResponse("User validation error!", exception.getMessage());
+    }
 }

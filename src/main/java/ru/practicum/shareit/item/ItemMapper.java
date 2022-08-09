@@ -9,10 +9,10 @@ public class ItemMapper {
 
     public ItemDto mapItemToDto(Item item) {
         ItemDto itemDto = new ItemDto();
-        itemDto.setItemId(item.getItemId());
+        itemDto.setId(item.getId());
         itemDto.setName(item.getName());
         itemDto.setDescription(item.getDescription());
-        itemDto.setAvailable(item.isAvailable());
+        itemDto.setAvailable(item.getAvailable());
 
         return itemDto;
     }
