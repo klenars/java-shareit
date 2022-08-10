@@ -17,30 +17,30 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
-    private final UserMapper userMapper;
 
     @Override
-    public UserDto create(User user) {
-        checkEmail(user.getEmail());
-        return userMapper.mapUserToDto(userStorage.add(user));
+    public UserDto create(UserDto userDto) {
+        checkEmail(userDto.getEmail());
+        User user = UserMapper.mapDtoToUser(userDto);
+        return UserMapper.mapUserToDto(userStorage.add(user));
     }
 
     @Override
     public UserDto get(long userId) {
-        return userMapper.mapUserToDto(userStorage.get(userId));
+        return UserMapper.mapUserToDto(userStorage.get(userId));
     }
 
     @Override
-    public UserDto update(long userId, User user) {
+    public UserDto update(long userId, UserDto userDto) {
         User userForUpdate = userStorage.get(userId);
-        if (user.getName() != null) {
-            userForUpdate.setName(user.getName());
+        if (userDto.getName() != null) {
+            userForUpdate.setName(userDto.getName());
         }
-        if (user.getEmail() != null) {
-            checkEmail(user.getEmail());
-            userForUpdate.setEmail(user.getEmail());
+        if (userDto.getEmail() != null) {
+            checkEmail(userDto.getEmail());
+            userForUpdate.setEmail(userDto.getEmail());
         }
-        return userMapper.mapUserToDto(userStorage.update(userId, userForUpdate));
+        return UserMapper.mapUserToDto(userStorage.update(userId, userForUpdate));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> getAll() {
         return userStorage.getAll().stream()
-                .map(userMapper::mapUserToDto)
+                .map(UserMapper::mapUserToDto)
                 .collect(Collectors.toList());
     }
 

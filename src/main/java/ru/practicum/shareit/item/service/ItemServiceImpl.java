@@ -20,47 +20,48 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemStorage itemStorage;
     private final UserStorage userStorage;
-    private final ItemMapper itemMapper;
 
     @Override
-    public ItemDto createItem(long userId, Item item) {
+    public ItemDto createItem(long userId, ItemDto itemDto) {
         checkUserExist(userId);
-        checkItemFields(item);
+        checkItemDtoFields(itemDto);
 
-        item.setOwnerId(userId);
+        Item item = ItemMapper.mapDtoToItem(itemDto);
 
-        return itemMapper.mapItemToDto(itemStorage.createItem(item));
+        item.setOwner(userStorage.get(userId));
+
+        return ItemMapper.mapItemToDto(itemStorage.createItem(item));
     }
 
     @Override
     public ItemDto getItemById(long itemId) {
-        return itemMapper.mapItemToDto(itemStorage.getItemById(itemId));
+        return ItemMapper.mapItemToDto(itemStorage.getItemById(itemId));
     }
 
     @Override
-    public ItemDto updateItem(long userId, long itemId, Item item) {
+    public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
         Item itemForUpdate = itemStorage.getItemById(itemId);
         checkUserExist(userId);
         checkItemsOwner(userId, itemForUpdate);
 
-        if (item.getName() != null) {
-            itemForUpdate.setName(item.getName());
+        if (itemDto.getName() != null) {
+            itemForUpdate.setName(itemDto.getName());
         }
-        if (item.getDescription() != null) {
-            itemForUpdate.setDescription(item.getDescription());
+        if (itemDto.getDescription() != null) {
+            itemForUpdate.setDescription(itemDto.getDescription());
         }
-        if (item.getAvailable() != null) {
-            itemForUpdate.setAvailable(item.getAvailable());
+        if (itemDto.getAvailable() != null) {
+            itemForUpdate.setAvailable(itemDto.getAvailable());
         }
 
-        return itemMapper.mapItemToDto(itemStorage.updateItem(itemId, itemForUpdate));
+        return ItemMapper.mapItemToDto(itemStorage.updateItem(itemId, itemForUpdate));
     }
 
     @Override
     public List<ItemDto> getAllItemsByOwner(long userId) {
         checkUserExist(userId);
         return itemStorage.getAllItemsByOwner(userId).stream()
-                .map(itemMapper::mapItemToDto)
+                .map(ItemMapper::mapItemToDto)
                 .collect(Collectors.toList());
     }
 
@@ -70,12 +71,12 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
         return itemStorage.getItemBySubstring(userId, text).stream()
-                .map(itemMapper::mapItemToDto)
+                .map(ItemMapper::mapItemToDto)
                 .collect(Collectors.toList());
     }
 
     private void checkItemsOwner(long userId, Item item) {
-        if (item.getOwnerId() != userId) {
+        if (item.getOwner().getId() != userId) {
             throw new UserValidationException(
                     String.format("User id=%d isn't owner of Item id=%d!", userId, item.getId())
             );
@@ -88,15 +89,15 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private void checkItemFields(Item item) {
+    private void checkItemDtoFields(ItemDto itemDto) {
         String errorMessage = null;
-        if (item.getName() == null || item.getName().isBlank()) {
+        if (itemDto.getName() == null || itemDto.getName().isBlank()) {
             errorMessage = "Item can't be without name!";
         }
-        if (item.getDescription() == null || item.getDescription().isBlank()) {
+        if (itemDto.getDescription() == null || itemDto.getDescription().isBlank()) {
             errorMessage = "Item can't be without description!";
         }
-        if (item.getAvailable() == null) {
+        if (itemDto.getAvailable() == null) {
             errorMessage = "Item can't be without available status!";
         }
 
