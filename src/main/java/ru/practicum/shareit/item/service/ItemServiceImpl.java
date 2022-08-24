@@ -8,8 +8,8 @@ import ru.practicum.shareit.exception.UserValidationException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.storage.ItemStorage;
-import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.item.storage.ItemRepository;
+import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,8 +18,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
-    private final ItemStorage itemStorage;
-    private final UserStorage userStorage;
+
+    private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
 
     @Override
     public ItemDto createItem(long userId, ItemDto itemDto) {
@@ -28,20 +29,20 @@ public class ItemServiceImpl implements ItemService {
 
         Item item = ItemMapper.mapDtoToItem(itemDto);
 
-        item.setOwner(userStorage.get(userId));
+        item.setOwner(userRepository.getReferenceById(userId));
 
-        return ItemMapper.mapItemToDto(itemStorage.createItem(item));
+        return ItemMapper.mapItemToDto(itemRepository.save(item));
     }
 
     @Override
     public ItemDto getItemById(long itemId) {
-        return ItemMapper.mapItemToDto(itemStorage.getItemById(itemId));
+        return ItemMapper.mapItemToDto(itemRepository.getReferenceById(itemId));
     }
 
     @Override
     public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
-        Item itemForUpdate = itemStorage.getItemById(itemId);
         checkUserExist(userId);
+        Item itemForUpdate = itemRepository.getReferenceById(itemId);
         checkItemsOwner(userId, itemForUpdate);
 
         if (itemDto.getName() != null) {
@@ -54,23 +55,24 @@ public class ItemServiceImpl implements ItemService {
             itemForUpdate.setAvailable(itemDto.getAvailable());
         }
 
-        return ItemMapper.mapItemToDto(itemStorage.updateItem(itemId, itemForUpdate));
+        return ItemMapper.mapItemToDto(itemRepository.save(itemForUpdate));
     }
 
     @Override
     public List<ItemDto> getAllItemsByOwner(long userId) {
         checkUserExist(userId);
-        return itemStorage.getAllItemsByOwner(userId).stream()
+        return itemRepository.findByOwnerId(userId).stream()
                 .map(ItemMapper::mapItemToDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<ItemDto> getItemBySubstring(long userId, String text) {
+        checkUserExist(userId);
         if (text.isBlank()) {
             return Collections.emptyList();
         }
-        return itemStorage.getItemBySubstring(userId, text).stream()
+        return itemRepository.findBySubstring(text).stream()
                 .map(ItemMapper::mapItemToDto)
                 .collect(Collectors.toList());
     }
@@ -84,7 +86,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void checkUserExist(long userId) {
-        if (userStorage.get(userId) == null) {
+        if (!userRepository.existsById(userId)) {
             throw new UserDoesntExistException(String.format("User id=%d doesn't exist!", userId));
         }
     }
