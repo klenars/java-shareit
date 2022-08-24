@@ -19,7 +19,4 @@ public class User {
     private String name;
 
     private String email;
-
-    @Transient
-    private List<Item> items = new ArrayList<>();
 }

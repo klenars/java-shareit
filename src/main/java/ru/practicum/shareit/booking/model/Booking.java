@@ -1,4 +1,4 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.booking.model;
 
 import lombok.Data;
 import ru.practicum.shareit.item.model.Item;
@@ -22,7 +22,6 @@ public class Booking {
     @Column(name = "end_date")
     private LocalDateTime end;
 
-
     @ManyToOne
     @JoinColumn(name = "item_id")
     private Item item;
@@ -33,5 +32,4 @@ public class Booking {
 
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
-
 }

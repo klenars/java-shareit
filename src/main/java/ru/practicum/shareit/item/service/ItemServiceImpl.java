@@ -3,8 +3,6 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.FieldValidationException;
-import ru.practicum.shareit.exception.UserDoesntExistException;
-import ru.practicum.shareit.exception.UserValidationException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
@@ -24,7 +22,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto createItem(long userId, ItemDto itemDto) {
-        checkUserExist(userId);
+        userRepository.checkUserExist(userId);
         checkItemDtoFields(itemDto);
 
         Item item = ItemMapper.mapDtoToItem(itemDto);
@@ -41,9 +39,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
-        checkUserExist(userId);
+        userRepository.checkUserExist(userId);
         Item itemForUpdate = itemRepository.getReferenceById(itemId);
-        checkItemsOwner(userId, itemForUpdate);
+        itemRepository.checkItemsOwner(userId, itemForUpdate);
 
         if (itemDto.getName() != null) {
             itemForUpdate.setName(itemDto.getName());
@@ -60,7 +58,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getAllItemsByOwner(long userId) {
-        checkUserExist(userId);
+        userRepository.checkUserExist(userId);
         return itemRepository.findByOwnerId(userId).stream()
                 .map(ItemMapper::mapItemToDto)
                 .collect(Collectors.toList());
@@ -68,27 +66,13 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getItemBySubstring(long userId, String text) {
-        checkUserExist(userId);
+        userRepository.checkUserExist(userId);
         if (text.isBlank()) {
             return Collections.emptyList();
         }
         return itemRepository.findBySubstring(text).stream()
                 .map(ItemMapper::mapItemToDto)
                 .collect(Collectors.toList());
-    }
-
-    private void checkItemsOwner(long userId, Item item) {
-        if (item.getOwner().getId() != userId) {
-            throw new UserValidationException(
-                    String.format("User id=%d isn't owner of Item id=%d!", userId, item.getId())
-            );
-        }
-    }
-
-    private void checkUserExist(long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new UserDoesntExistException(String.format("User id=%d doesn't exist!", userId));
-        }
     }
 
     private void checkItemDtoFields(ItemDto itemDto) {
