@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.booking.dto.BookingStateIn;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -11,6 +12,8 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserRepository;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,9 +33,6 @@ public class BookingServiceImpl implements BookingService {
         booking.setItem(item);
         booking.setStatus(BookingStatus.WAITING);
 
-        booking = bookingRepository.save(booking);
-        System.out.println(booking.toString());
-
         return booking;
     }
 
@@ -51,7 +51,20 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking getBookingById(long userId, long bookingId) {
         Booking booking = bookingRepository.getReferenceById(bookingId);
-        System.out.println(booking.toString());
+        bookingRepository.checkAuthorBookingOrOwnerItem(userId, booking);
+
         return booking;
+    }
+
+    @Override
+    public List<Booking> getBookingByUser(long userId, BookingStateIn state) {
+        // TODO
+        return null;
+    }
+
+    @Override
+    public List<Booking> getBookingByOwner(long ownerId, BookingStateIn state) {
+        // TODO
+        return null;
     }
 }
