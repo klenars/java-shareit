@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.persistence.EntityNotFoundException;
+
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
@@ -36,5 +38,12 @@ public class ErrorHandler {
     public ErrorResponse handleUserDoesntExistError(final UserDoesntExistException exception) {
         log.warn(exception.getMessage());
         return new ErrorResponse("User validation error!", exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleEntityNotFoundException(EntityNotFoundException exception) {
+        log.warn(exception.getMessage());
+        return new ErrorResponse("User not found!", exception.getMessage());
     }
 }
