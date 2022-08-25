@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
 import ru.practicum.shareit.item.model.Item;
 
 @Component
@@ -25,5 +26,15 @@ public class ItemMapper {
         item.setAvailable(itemDto.getAvailable());
 
         return item;
+    }
+
+    public static ItemDtoWithBooking mapItemToDtoWithBooking(Item item) {
+        ItemDtoWithBooking itemDtoWithBooking = new ItemDtoWithBooking();
+        itemDtoWithBooking.setId(item.getId());
+        itemDtoWithBooking.setName(item.getName());
+        itemDtoWithBooking.setDescription(item.getDescription());
+        itemDtoWithBooking.setAvailable(item.getAvailable());
+
+        return itemDtoWithBooking;
     }
 }

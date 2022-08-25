@@ -27,7 +27,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleUserValidationError(final UserValidationException exception) {
         log.warn(exception.getMessage());
         return new ErrorResponse("User validation error!", exception.getMessage());
@@ -44,6 +44,13 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleEntityNotFoundException(EntityNotFoundException exception) {
         log.warn(exception.getMessage());
-        return new ErrorResponse("User not found!", exception.getMessage());
+        return new ErrorResponse("Entity not found!", exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleWrongStatusError(IllegalArgumentException exception) {
+        log.warn(exception.getMessage());
+        return new ErrorResponse("Unknown state: UNSUPPORTED_STATUS", exception.getMessage());
     }
 }
