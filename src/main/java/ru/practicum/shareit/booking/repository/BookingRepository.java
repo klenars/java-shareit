@@ -41,6 +41,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("select b from Booking b where b.item.id = ?1 and b.start > ?2 order by b.start")
     Booking findByItem_IdAndStartAfterOrderByStartAsc(long id, LocalDateTime start);
 
+    @Query("select (count(b) > 0) from Booking b where b.item.id = ?1 and b.booker.id = ?2 and b.end < ?3")
+    boolean existsByItem_IdAndBooker_IdAndEndBefore(long itemId, long bookerId, LocalDateTime end);
+
     default void checkAuthorBookingOrOwnerItem(long userId, Booking booking) {
         if (booking.getBooker().getId() != userId && userId != booking.getItem().getOwner().getId()) {
             throw new UserValidationException(
