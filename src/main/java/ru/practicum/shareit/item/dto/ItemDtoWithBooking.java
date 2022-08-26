@@ -2,7 +2,6 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.Data;
 import ru.practicum.shareit.booking.dto.BookingDtoForItem;
-import ru.practicum.shareit.item.model.Comment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,5 +10,5 @@ import java.util.List;
 public class ItemDtoWithBooking extends ItemDto{
     BookingDtoForItem lastBooking;
     BookingDtoForItem nextBooking;
-    List<Comment> comments = new ArrayList<>();
+    List<CommentDtoOut> comments = new ArrayList<>();
 }

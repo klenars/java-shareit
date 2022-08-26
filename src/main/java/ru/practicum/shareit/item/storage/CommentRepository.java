@@ -1,9 +1,13 @@
 package ru.practicum.shareit.item.storage;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.practicum.shareit.item.dto.CommentDtoForDb;
+import org.springframework.data.jpa.repository.Query;
+import ru.practicum.shareit.item.model.Comment;
 
-public interface CommentRepository extends JpaRepository<CommentDtoForDb, Long> {
+import java.util.List;
 
+public interface CommentRepository extends JpaRepository<Comment, Long> {
+    @Query("select c from Comment c where c.item.id = ?1")
+    List<Comment> findByItem_Id(long id);
 
 }

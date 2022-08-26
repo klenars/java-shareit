@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.FieldValidationException;
-import ru.practicum.shareit.item.dto.CommentDtoForDb;
+import ru.practicum.shareit.item.dto.CommentDtoOut;
 import ru.practicum.shareit.item.dto.CommentMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.storage.CommentRepository;
@@ -23,16 +23,18 @@ public class CommentServiceImpl implements CommentService {
     private final ItemRepository itemRepository;
 
     @Override
-    public Comment addComment(long userId, long itemId, Comment comment) {
+    public CommentDtoOut addComment(long userId, long itemId, Comment comment) {
         userRepository.checkUserExist(userId);
         checkCommentAuthor(userId, itemId);
+        if (comment.getText().isBlank()) {
+            throw new FieldValidationException("Comment can't be without text!");
+        }
 
-        CommentDtoForDb commentDtoForDb = CommentMapper.mapCommentToDtoForDb(comment);
-        commentDtoForDb.setAuthorId(userId);
-        commentDtoForDb.setItemId(itemId);
-        commentDtoForDb.setCreated(LocalDateTime.now());
+        comment.setItem(itemRepository.getReferenceById(itemId));
+        comment.setAuthor(userRepository.getReferenceById(userId));
+        comment.setCreated(LocalDateTime.now());
 
-        return getCommentFromDtoDb(commentRepository.save(commentDtoForDb));
+        return CommentMapper.mapCommentToDtoOut(commentRepository.save(comment));
     }
 
     private void checkCommentAuthor(long userId, long itemId) {
@@ -41,12 +43,5 @@ public class CommentServiceImpl implements CommentService {
                     String.format("User id=%d hasn't booking item id=%d or booking isn't finished yet!", userId, itemId)
             );
         }
-    }
-
-    private Comment getCommentFromDtoDb(CommentDtoForDb commentDtoForDb) {
-        Comment comment = CommentMapper.mapDtoDbToComment(commentDtoForDb);
-        comment.setItem(itemRepository.getReferenceById(commentDtoForDb.getItemId()));
-        comment.setAuthor(userRepository.getReferenceById(commentDtoForDb.getAuthorId()));
-        return comment;
     }
 }

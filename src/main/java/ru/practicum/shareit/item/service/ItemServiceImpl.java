@@ -6,9 +6,11 @@ import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.FieldValidationException;
 import ru.practicum.shareit.item.ItemMapper;
+import ru.practicum.shareit.item.dto.CommentMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.user.storage.UserRepository;
 
@@ -25,6 +27,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     public ItemDto createItem(long userId, ItemDto itemDto) {
@@ -54,6 +57,11 @@ public class ItemServiceImpl implements ItemService {
                     )
             );
         }
+        itemDtoWithBooking.setComments(
+                commentRepository.findByItem_Id(itemId).stream()
+                        .map(CommentMapper::mapCommentToDtoOut)
+                        .collect(Collectors.toList())
+        );
 
         return itemDtoWithBooking;
     }

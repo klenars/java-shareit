@@ -68,6 +68,8 @@ public class BookingServiceImpl implements BookingService {
         userRepository.checkUserExist(userId);
 
         switch (state) {
+            case CURRENT:
+                return bookingRepository.findByBooker_IdAndStartBeforeAndEndAfter(userId, LocalDateTime.now());
             case PAST:
                 return bookingRepository.findByBooker_IdAndEndBefore(userId, LocalDateTime.now());
             case FUTURE:
@@ -86,6 +88,8 @@ public class BookingServiceImpl implements BookingService {
         userRepository.checkUserExist(ownerId);
 
         switch (state) {
+            case CURRENT:
+                return bookingRepository.findByItem_Owner_IdAndStartBeforeAndEndAfter(ownerId, LocalDateTime.now());
             case PAST:
                 return bookingRepository.findByItem_Owner_IdAndEndBefore(ownerId, LocalDateTime.now());
             case FUTURE:

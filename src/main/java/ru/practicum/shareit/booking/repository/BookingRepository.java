@@ -23,6 +23,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("select b from Booking b where b.booker.id = ?1 and b.status = ?2 order by b.start DESC")
     List<Booking> findByBooker_IdAndStatus(long id, BookingStatus status);
 
+    @Query("select b from Booking b where b.booker.id = ?1 and b.start < ?2 and b.end > ?2")
+    List<Booking> findByBooker_IdAndStartBeforeAndEndAfter(long id, LocalDateTime current);
+
     @Query("select b from Booking b where b.item.owner.id = ?1 order by b.start DESC")
     List<Booking> findByItem_Owner_Id(long id);
 
@@ -31,6 +34,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("select b from Booking b where b.item.owner.id = ?1 and b.start > ?2 order by b.start DESC")
     List<Booking> findByItem_Owner_IdAndStartAfter(long id, LocalDateTime start);
+
+    @Query("select b from Booking b where b.item.owner.id = ?1 and b.start < ?2 and b.end > ?2")
+    List<Booking> findByItem_Owner_IdAndStartBeforeAndEndAfter(long id, LocalDateTime current);
 
     @Query("select b from Booking b where b.item.owner.id = ?1 and b.status = ?2 order by b.start DESC")
     List<Booking> findByItem_Owner_IdAndStatus(long id, BookingStatus status);
