@@ -4,7 +4,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class BookingDtoIn {
+public class BookingRequestDto {
 
     private long itemId;
 

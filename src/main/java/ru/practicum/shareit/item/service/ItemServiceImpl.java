@@ -5,10 +5,8 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.FieldValidationException;
-import ru.practicum.shareit.item.ItemMapper;
-import ru.practicum.shareit.item.dto.CommentMapper;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
@@ -118,6 +116,21 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public CommentDtoOut addComment(long userId, long itemId, Comment comment) {
+        userRepository.checkUserExist(userId);
+        checkCommentAuthor(userId, itemId);
+        if (comment.getText().isBlank()) {
+            throw new FieldValidationException("Comment can't be without text!");
+        }
+
+        comment.setItem(itemRepository.getReferenceById(itemId));
+        comment.setAuthor(userRepository.getReferenceById(userId));
+        comment.setCreated(LocalDateTime.now());
+
+        return CommentMapper.mapCommentToDtoOut(commentRepository.save(comment));
+    }
+
     private void checkItemDtoFields(ItemDto itemDto) {
         String errorMessage = null;
         if (itemDto.getName() == null || itemDto.getName().isBlank()) {
@@ -132,6 +145,14 @@ public class ItemServiceImpl implements ItemService {
 
         if (errorMessage != null) {
             throw new FieldValidationException(errorMessage);
+        }
+    }
+
+    private void checkCommentAuthor(long userId, long itemId) {
+        if (!bookingRepository.existsByItem_IdAndBooker_IdAndEndBefore(itemId, userId, LocalDateTime.now())) {
+            throw new FieldValidationException(
+                    String.format("User id=%d hasn't booking item id=%d or booking isn't finished yet!", userId, itemId)
+            );
         }
     }
 }

@@ -2,8 +2,9 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.dto.BookingDtoIn;
+import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.dto.BookingStateIn;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -27,23 +28,23 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
 
     @Override
-    public Booking createBooking(long userId, BookingDtoIn bookingDtoIn) {
+    public BookingResponseDto createBooking(long userId, BookingRequestDto bookingRequestDto) {
         userRepository.checkUserExist(userId);
-        checkDateStartAndEnd(bookingDtoIn);
+        checkDateStartAndEnd(bookingRequestDto);
         User booker = userRepository.getReferenceById(userId);
-        Item item = itemRepository.getReferenceById(bookingDtoIn.getItemId());
+        Item item = itemRepository.getReferenceById(bookingRequestDto.getItemId());
         checkAuthorIsNotOwner(userId, item);
         checkItemAvailable(item);
-        Booking booking = BookingMapper.mapDtoInToBooker(bookingDtoIn);
+        Booking booking = BookingMapper.mapDtoInToBooker(bookingRequestDto);
         booking.setBooker(booker);
         booking.setItem(item);
         booking.setStatus(BookingStatus.WAITING);
 
-        return bookingRepository.save(booking);
+        return BookingMapper.mapBookingToResponseDto(bookingRepository.save(booking));
     }
 
     @Override
-    public Booking approveBooking(long userId, long bookingId, boolean approve) {
+    public BookingResponseDto approveBooking(long userId, long bookingId, boolean approve) {
         userRepository.checkUserExist(userId);
         Booking booking = bookingRepository.getReferenceById(bookingId);
         checkBookingStatus(booking);
@@ -52,55 +53,71 @@ public class BookingServiceImpl implements BookingService {
 
         booking.setStatus(approve ? BookingStatus.APPROVED : BookingStatus.REJECTED);
 
-        return bookingRepository.save(booking);
+        return BookingMapper.mapBookingToResponseDto(bookingRepository.save(booking));
     }
 
     @Override
-    public Booking getBookingById(long userId, long bookingId) {
+    public BookingResponseDto getBookingById(long userId, long bookingId) {
         Booking booking = bookingRepository.getReferenceById(bookingId);
         bookingRepository.checkAuthorBookingOrOwnerItem(userId, booking);
 
-        return booking;
+        return BookingMapper.mapBookingToResponseDto(booking);
     }
 
     @Override
-    public List<Booking> getBookingByUser(long userId, BookingStateIn state) {
+    public List<BookingResponseDto> getBookingByUser(long userId, BookingStateIn state) {
         userRepository.checkUserExist(userId);
 
+        List<Booking> currentList;
+
         switch (state) {
             case CURRENT:
-                return bookingRepository.findByBooker_IdAndStartBeforeAndEndAfter(userId, LocalDateTime.now());
+                currentList = bookingRepository.findByBooker_IdAndStartBeforeAndEndAfter(userId, LocalDateTime.now());
+                break;
             case PAST:
-                return bookingRepository.findByBooker_IdAndEndBefore(userId, LocalDateTime.now());
+                currentList = bookingRepository.findByBooker_IdAndEndBefore(userId, LocalDateTime.now());
+                break;
             case FUTURE:
-                return bookingRepository.findByBooker_IdAndStartAfter(userId, LocalDateTime.now());
+                currentList = bookingRepository.findByBooker_IdAndStartAfter(userId, LocalDateTime.now());
+                break;
             case WAITING:
-                return bookingRepository.findByBooker_IdAndStatus(userId, BookingStatus.WAITING);
+                currentList = bookingRepository.findByBooker_IdAndStatus(userId, BookingStatus.WAITING);
+                break;
             case REJECTED:
-                return bookingRepository.findByBooker_IdAndStatus(userId, BookingStatus.REJECTED);
+                currentList = bookingRepository.findByBooker_IdAndStatus(userId, BookingStatus.REJECTED);
+                break;
             default:
-                return bookingRepository.getAllByAuthor(userId);
+                currentList = bookingRepository.getAllByAuthor(userId);
         }
+        return BookingMapper.mapListBookingToListResponseDto(currentList);
     }
 
     @Override
-    public List<Booking> getBookingByOwner(long ownerId, BookingStateIn state) {
+    public List<BookingResponseDto> getBookingByOwner(long ownerId, BookingStateIn state) {
         userRepository.checkUserExist(ownerId);
+
+        List<Booking> currentList;
 
         switch (state) {
             case CURRENT:
-                return bookingRepository.findByItem_Owner_IdAndStartBeforeAndEndAfter(ownerId, LocalDateTime.now());
+                currentList = bookingRepository.findByItem_Owner_IdAndStartBeforeAndEndAfter(ownerId, LocalDateTime.now());
+                break;
             case PAST:
-                return bookingRepository.findByItem_Owner_IdAndEndBefore(ownerId, LocalDateTime.now());
+                currentList = bookingRepository.findByItem_Owner_IdAndEndBefore(ownerId, LocalDateTime.now());
+                break;
             case FUTURE:
-                return bookingRepository.findByItem_Owner_IdAndStartAfter(ownerId, LocalDateTime.now());
+                currentList = bookingRepository.findByItem_Owner_IdAndStartAfter(ownerId, LocalDateTime.now());
+                break;
             case WAITING:
-                return bookingRepository.findByItem_Owner_IdAndStatus(ownerId, BookingStatus.WAITING);
+                currentList = bookingRepository.findByItem_Owner_IdAndStatus(ownerId, BookingStatus.WAITING);
+                break;
             case REJECTED:
-                return bookingRepository.findByItem_Owner_IdAndStatus(ownerId, BookingStatus.REJECTED);
+                currentList = bookingRepository.findByItem_Owner_IdAndStatus(ownerId, BookingStatus.REJECTED);
+                break;
             default:
-                return bookingRepository.findByItem_Owner_Id(ownerId);
+                currentList = bookingRepository.findByItem_Owner_Id(ownerId);
         }
+        return BookingMapper.mapListBookingToListResponseDto(currentList);
     }
 
     private void checkBookingStatus(Booking booking) {
@@ -127,14 +144,14 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private void checkDateStartAndEnd(BookingDtoIn bookingDtoIn) {
+    private void checkDateStartAndEnd(BookingRequestDto bookingRequestDto) {
         String errorMessage = null;
 
-        if (bookingDtoIn.getStart().isBefore(LocalDateTime.now())) {
+        if (bookingRequestDto.getStart().isBefore(LocalDateTime.now())) {
             errorMessage = "Start booking can't be in the past!";
-        } else if (bookingDtoIn.getEnd().isBefore(LocalDateTime.now())) {
+        } else if (bookingRequestDto.getEnd().isBefore(LocalDateTime.now())) {
             errorMessage = "End booking can't be in the past!";
-        } else if (bookingDtoIn.getEnd().isBefore(bookingDtoIn.getStart())) {
+        } else if (bookingRequestDto.getEnd().isBefore(bookingRequestDto.getStart())) {
             errorMessage = "End booking can't be earlier than start!";
         }
 
