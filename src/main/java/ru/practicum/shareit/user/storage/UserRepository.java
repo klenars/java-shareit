@@ -11,4 +11,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
             throw new UserDoesntExistException(String.format("User id=%d doesn't exist!", userId));
         }
     }
+
+    default User getById(long id) {
+        return findById(id)
+                .orElseThrow(() -> new UserDoesntExistException(String.format("User id=%d doesn't exist!", id)));
+    }
 }

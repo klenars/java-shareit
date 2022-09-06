@@ -1,4 +1,4 @@
-package ru.practicum.shareit.requests;
+package ru.practicum.shareit.requests.model;
 
 import lombok.Data;
 import ru.practicum.shareit.user.model.User;
@@ -21,6 +21,5 @@ public class ItemRequest {
     @JoinColumn(name = "requestor_id")
     private User requestor;
 
-    @Transient
     private LocalDateTime created;
 }
