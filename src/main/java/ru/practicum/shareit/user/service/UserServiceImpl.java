@@ -2,12 +2,11 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.FieldUniqueException;
 import ru.practicum.shareit.exception.FieldValidationException;
-import ru.practicum.shareit.user.UserMapper;
+import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,23 +15,23 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
 
     @Override
     public UserDto create(UserDto userDto) {
         checkEmail(userDto.getEmail());
         User user = UserMapper.mapDtoToUser(userDto);
-        return UserMapper.mapUserToDto(userStorage.add(user));
+        return UserMapper.mapUserToDto(userRepository.save(user));
     }
 
     @Override
     public UserDto get(long userId) {
-        return UserMapper.mapUserToDto(userStorage.get(userId));
+        return UserMapper.mapUserToDto(userRepository.getReferenceById(userId));
     }
 
     @Override
     public UserDto update(long userId, UserDto userDto) {
-        User userForUpdate = userStorage.get(userId);
+        User userForUpdate = userRepository.getReferenceById(userId);
         if (userDto.getName() != null) {
             userForUpdate.setName(userDto.getName());
         }
@@ -40,17 +39,17 @@ public class UserServiceImpl implements UserService {
             checkEmail(userDto.getEmail());
             userForUpdate.setEmail(userDto.getEmail());
         }
-        return UserMapper.mapUserToDto(userStorage.update(userId, userForUpdate));
+        return UserMapper.mapUserToDto(userRepository.save(userForUpdate));
     }
 
     @Override
     public void delete(long userId) {
-        userStorage.delete(userId);
+        userRepository.deleteById(userId);
     }
 
     @Override
     public List<UserDto> getAll() {
-        return userStorage.getAll().stream()
+        return userRepository.findAll().stream()
                 .map(UserMapper::mapUserToDto)
                 .collect(Collectors.toList());
     }
@@ -58,9 +57,6 @@ public class UserServiceImpl implements UserService {
     private void checkEmail(final String email) {
         if (email == null || email.isBlank() || !email.contains("@")) {
             throw new FieldValidationException("Email is wrong!");
-        }
-        if (getAll().stream().anyMatch(user -> user.getEmail().equals(email))) {
-            throw new FieldUniqueException(String.format("User with email %s already exists!", email));
         }
     }
 }
