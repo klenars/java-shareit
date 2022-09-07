@@ -8,9 +8,6 @@ import ru.practicum.shareit.requests.service.RequestService;
 
 import java.util.List;
 
-/**
- * // TODO .
- */
 @RestController
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
@@ -37,9 +34,9 @@ public class ItemRequestController {
     public List<ItemRequestDto> getAllRequestsFromOtherUser(
             @RequestHeader("X-Sharer-User-Id") long userId,
             @RequestParam(defaultValue = "0") int from,
-            @RequestParam int size
+            @RequestParam(defaultValue = "10") int size
     ) {
-        return null;
+        return requestService.getAllRequestsFromOtherUser(userId, from, size);
     }
 
     @GetMapping("/{requestId}")

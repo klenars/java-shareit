@@ -1,6 +1,7 @@
 package ru.practicum.shareit.requests.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.FieldValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -54,6 +55,18 @@ public class RequestServiceImpl implements RequestService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<ItemRequestDto> getAllRequestsFromOtherUser(long userId, int from, int size) {
+        userRepository.checkUserExist(userId);
+
+        return requestRepository.findByRequestor_IdNotOrderByCreatedDesc(
+                        userId, PageRequest.of(getPageNumber(from, size), size)
+                ).stream()
+                .map(RequestMapper::mapItemRequestToDto)
+                .peek(this::addItemsToRequestDto)
+                .collect(Collectors.toList());
+    }
+
     private void checkRequestDescription(String description) {
         if (description == null || description.isBlank()) {
             throw new FieldValidationException("Request can't be without description!");
@@ -65,5 +78,12 @@ public class RequestServiceImpl implements RequestService {
                 .map(ItemMapper::mapItemToDto)
                 .collect(Collectors.toList());
         itemRequestDto.setItems(items);
+    }
+
+    private int getPageNumber(int from, int size) {
+        if (from < 0) {
+            throw new FieldValidationException("parameter from must not be less than zero");
+        }
+        return ++from / size;
     }
 }
