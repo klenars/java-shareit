@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -89,9 +90,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDtoWithBooking> getAllItemsByOwner(long userId) {
+    public List<ItemDtoWithBooking> getAllItemsByOwner(long userId, int from, int size) {
         userRepository.checkUserExist(userId);
-        return itemRepository.findByOwnerId(userId).stream()
+        return itemRepository.findByOwnerId(userId, PageRequest.of(getPageNumber(from, size), size)).stream()
                 .map(item -> {
                     ItemDtoWithBooking itemDtoWithBooking = ItemMapper.mapItemToDtoWithBooking(item);
                     itemDtoWithBooking.setLastBooking(
@@ -111,12 +112,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItemBySubstring(long userId, String text) {
+    public List<ItemDto> getItemBySubstring(long userId, String text, int from, int size) {
         userRepository.checkUserExist(userId);
         if (text.isBlank()) {
             return Collections.emptyList();
         }
-        return itemRepository.findBySubstring(text).stream()
+        return itemRepository.findBySubstring(text, PageRequest.of(getPageNumber(from, size), size)).stream()
                 .map(ItemMapper::mapItemToDto)
                 .collect(Collectors.toList());
     }
@@ -159,5 +160,12 @@ public class ItemServiceImpl implements ItemService {
                     String.format("User id=%d hasn't booking item id=%d or booking isn't finished yet!", userId, itemId)
             );
         }
+    }
+
+    private int getPageNumber(int from, int size) {
+        if (from < 0) {
+            throw new FieldValidationException("parameter from must not be less than zero");
+        }
+        return from / size;
     }
 }

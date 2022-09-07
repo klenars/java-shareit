@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
@@ -65,7 +66,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponseDto> getBookingByUser(long userId, BookingStateIn state) {
+    public List<BookingResponseDto> getBookingByUser(long userId, BookingStateIn state, int from, int size) {
         userRepository.checkUserExist(userId);
 
         List<Booking> currentList;
@@ -87,13 +88,13 @@ public class BookingServiceImpl implements BookingService {
                 currentList = bookingRepository.findByBooker_IdAndStatus(userId, BookingStatus.REJECTED);
                 break;
             default:
-                currentList = bookingRepository.getAllByAuthor(userId);
+                currentList = bookingRepository.getAllByAuthor(userId, PageRequest.of(getPageNumber(from, size), size));
         }
         return BookingMapper.mapListBookingToListResponseDto(currentList);
     }
 
     @Override
-    public List<BookingResponseDto> getBookingByOwner(long ownerId, BookingStateIn state) {
+    public List<BookingResponseDto> getBookingByOwner(long ownerId, BookingStateIn state, int from, int size) {
         userRepository.checkUserExist(ownerId);
 
         List<Booking> currentList;
@@ -115,7 +116,7 @@ public class BookingServiceImpl implements BookingService {
                 currentList = bookingRepository.findByItem_Owner_IdAndStatus(ownerId, BookingStatus.REJECTED);
                 break;
             default:
-                currentList = bookingRepository.findByItem_Owner_Id(ownerId);
+                currentList = bookingRepository.findByItem_Owner_Id(ownerId, PageRequest.of(getPageNumber(from, size), size));
         }
         return BookingMapper.mapListBookingToListResponseDto(currentList);
     }
@@ -158,5 +159,12 @@ public class BookingServiceImpl implements BookingService {
         if (errorMessage != null) {
             throw new FieldValidationException(errorMessage);
         }
+    }
+
+    private int getPageNumber(int from, int size) {
+        if (from < 0) {
+            throw new FieldValidationException("parameter from must not be less than zero");
+        }
+        return from / size;
     }
 }

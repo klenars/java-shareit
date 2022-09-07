@@ -84,6 +84,6 @@ public class RequestServiceImpl implements RequestService {
         if (from < 0) {
             throw new FieldValidationException("parameter from must not be less than zero");
         }
-        return ++from / size;
+        return from / size;
     }
 }

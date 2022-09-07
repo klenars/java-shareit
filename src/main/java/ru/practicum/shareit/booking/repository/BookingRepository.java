@@ -6,13 +6,14 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exception.UserValidationException;
 
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("select b from Booking b where b.booker.id = ?1 order by b.start DESC")
-    List<Booking> getAllByAuthor(long id);
+    List<Booking> getAllByAuthor(long id, Pageable pageable);
 
     @Query("select b from Booking b where b.booker.id = ?1 and b.end < ?2 order by b.start DESC")
     List<Booking> findByBooker_IdAndEndBefore(long id, LocalDateTime end);
@@ -27,7 +28,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByBooker_IdAndStartBeforeAndEndAfter(long id, LocalDateTime current);
 
     @Query("select b from Booking b where b.item.owner.id = ?1 order by b.start DESC")
-    List<Booking> findByItem_Owner_Id(long id);
+    List<Booking> findByItem_Owner_Id(long id, Pageable pageable);
 
     @Query("select b from Booking b where b.item.owner.id = ?1 and b.end < ?2 order by b.start DESC")
     List<Booking> findByItem_Owner_IdAndEndBefore(long id, LocalDateTime end);

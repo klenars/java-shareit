@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.storage;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.exception.UserValidationException;
@@ -9,13 +10,13 @@ import java.util.List;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
     @Query("select i from Item i where i.owner.id = ?1")
-    List<Item> findByOwnerId(long id);
+    List<Item> findByOwnerId(long id, Pageable pageable);
 
     @Query("select i from Item i " +
             "where i.available = true " +
                 "and (upper(i.name) like upper(concat('%', ?1, '%')) " +
                 "or upper(i.description) like upper(concat('%', ?1, '%')))")
-    List<Item> findBySubstring(String text);
+    List<Item> findBySubstring(String text, Pageable pageable);
 
     @Query("select i from Item i where i.itemRequest.id = ?1")
     List<Item> findByRequestId(long id);
