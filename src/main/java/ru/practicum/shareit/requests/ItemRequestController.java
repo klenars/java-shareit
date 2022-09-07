@@ -27,12 +27,15 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    public List<ItemRequestDto> getAllRequests() {
-        return null;
+    public List<ItemRequestDto> getAllRequests(
+            @RequestHeader("X-Sharer-User-Id") long userId
+    ) {
+        return requestService.getAll(userId);
     }
 
     @GetMapping("/all")
     public List<ItemRequestDto> getAllRequestsFromOtherUser(
+            @RequestHeader("X-Sharer-User-Id") long userId,
             @RequestParam(defaultValue = "0") int from,
             @RequestParam int size
     ) {
@@ -41,8 +44,9 @@ public class ItemRequestController {
 
     @GetMapping("/{requestId}")
     public ItemRequestDto getById(
+            @RequestHeader("X-Sharer-User-Id") long userId,
             @PathVariable long requestId
     ) {
-        return null;
+        return requestService.getById(userId, requestId);
     }
 }

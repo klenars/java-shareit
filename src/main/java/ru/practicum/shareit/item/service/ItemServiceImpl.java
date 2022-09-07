@@ -10,6 +10,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
+import ru.practicum.shareit.requests.model.ItemRequest;
+import ru.practicum.shareit.requests.repository.RequestRepository;
 import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.time.LocalDateTime;
@@ -26,13 +28,16 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final RequestRepository requestRepository;
 
     @Override
     public ItemDto createItem(long userId, ItemDto itemDto) {
         userRepository.checkUserExist(userId);
         checkItemDtoFields(itemDto);
 
-        Item item = ItemMapper.mapDtoToItem(itemDto);
+        ItemRequest request = itemDto.getRequestId() == 0 ? null : requestRepository.getById(itemDto.getRequestId());
+
+        Item item = ItemMapper.mapDtoToItem(itemDto, request);
 
         item.setOwner(userRepository.getReferenceById(userId));
 

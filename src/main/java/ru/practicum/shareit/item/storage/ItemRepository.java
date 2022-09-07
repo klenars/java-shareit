@@ -17,6 +17,9 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
                 "or upper(i.description) like upper(concat('%', ?1, '%')))")
     List<Item> findBySubstring(String text);
 
+    @Query("select i from Item i where i.itemRequest.id = ?1")
+    List<Item> findByRequestId(long id);
+
     default void checkItemsOwner(long userId, Item item) {
         if (item.getOwner().getId() != userId) {
             throw new UserValidationException(

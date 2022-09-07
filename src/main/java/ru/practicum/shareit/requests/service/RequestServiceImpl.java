@@ -3,6 +3,9 @@ package ru.practicum.shareit.requests.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.FieldValidationException;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.requests.dto.ItemRequestDto;
 import ru.practicum.shareit.requests.dto.ItemRequestDtoIn;
 import ru.practicum.shareit.requests.dto.RequestMapper;
@@ -11,12 +14,16 @@ import ru.practicum.shareit.requests.repository.RequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserRepository;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class RequestServiceImpl implements RequestService {
 
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
 
     @Override
     public ItemRequestDto createRequest(long userId, ItemRequestDtoIn request) {
@@ -28,9 +35,35 @@ public class RequestServiceImpl implements RequestService {
         return RequestMapper.mapItemRequestToDto(requestRepository.save(itemRequest));
     }
 
+    @Override
+    public ItemRequestDto getById(long userId, long requestId) {
+        userRepository.checkUserExist(userId);
+        ItemRequestDto itemRequestDto = RequestMapper.mapItemRequestToDto(requestRepository.getById(requestId));
+        addItemsToRequestDto(itemRequestDto);
+
+        return itemRequestDto;
+    }
+
+    @Override
+    public List<ItemRequestDto> getAll(long userId) {
+        userRepository.checkUserExist(userId);
+
+        return requestRepository.getAllByRequestorId(userId).stream()
+                .map(RequestMapper::mapItemRequestToDto)
+                .peek(this::addItemsToRequestDto)
+                .collect(Collectors.toList());
+    }
+
     private void checkRequestDescription(String description) {
         if (description == null || description.isBlank()) {
             throw new FieldValidationException("Request can't be without description!");
         }
+    }
+
+    private void addItemsToRequestDto(ItemRequestDto itemRequestDto) {
+        List<ItemDto> items = itemRepository.findByRequestId(itemRequestDto.getId()).stream()
+                .map(ItemMapper::mapItemToDto)
+                .collect(Collectors.toList());
+        itemRequestDto.setItems(items);
     }
 }
