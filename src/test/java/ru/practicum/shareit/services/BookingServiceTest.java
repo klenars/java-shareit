@@ -1,6 +1,7 @@
 package ru.practicum.shareit.services;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,16 +9,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
+import ru.practicum.shareit.booking.dto.BookingStateIn;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.exception.UserValidationException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -66,7 +70,7 @@ class BookingServiceTest {
             item,
             user,
             BookingStatus.WAITING
-            );
+    );
 
     @Test
     void createBooking() {
@@ -86,22 +90,68 @@ class BookingServiceTest {
         assertThat(bookingResponseDto.getItem(), equalTo(booking.getItem()));
         assertThat(bookingResponseDto.getBooker(), equalTo(booking.getBooker()));
 
-
+        Assertions.assertThrows(UserValidationException.class, () -> {
+            bookingService.createBooking(888L, bookingRequestDto);
+        });
     }
 
     @Test
     void approveBooking() {
+        Mockito
+                .when(bookingRepository.getReferenceById(anyLong()))
+                .thenReturn(booking);
+        Mockito
+                .when(bookingRepository.save(any()))
+                .thenReturn(booking);
+
+        BookingResponseDto bookingResponseDto = bookingService.approveBooking(1L, booking.getId(), true);
+
+        assertThat(bookingResponseDto.getId(), equalTo(booking.getId()));
+        assertThat(bookingResponseDto.getStart(), equalTo(booking.getStart()));
+        assertThat(bookingResponseDto.getEnd(), equalTo(booking.getEnd()));
+        assertThat(bookingResponseDto.getStatus(), equalTo(booking.getStatus()));
+        assertThat(bookingResponseDto.getItem(), equalTo(booking.getItem()));
+        assertThat(bookingResponseDto.getBooker(), equalTo(booking.getBooker()));
     }
 
     @Test
     void getBookingById() {
+        Mockito
+                .when(bookingRepository.save(any()))
+                .thenReturn(booking);
+        Mockito
+                .when(itemRepository.getReferenceById(anyLong()))
+                .thenReturn(item);
+
+        BookingResponseDto bookingResponseDto = bookingService.createBooking(1L, bookingRequestDto);
+
+        assertThat(bookingResponseDto.getId(), equalTo(booking.getId()));
+        assertThat(bookingResponseDto.getStart(), equalTo(booking.getStart()));
+        assertThat(bookingResponseDto.getEnd(), equalTo(booking.getEnd()));
+        assertThat(bookingResponseDto.getStatus(), equalTo(booking.getStatus()));
+        assertThat(bookingResponseDto.getItem(), equalTo(booking.getItem()));
+        assertThat(bookingResponseDto.getBooker(), equalTo(booking.getBooker()));
     }
 
     @Test
     void getBookingByUser() {
+        Mockito
+                .when(bookingRepository.findByBooker_IdAndStatus(anyLong(), any()))
+                .thenReturn(List.of(booking));
+
+        List<BookingResponseDto> bookings = bookingService.getBookingByUser(1, BookingStateIn.WAITING, 0, 10);
+
+        assertThat(bookings.size(), equalTo(List.of(booking).size()));
     }
 
     @Test
     void getBookingByOwner() {
+        Mockito
+                .when(bookingRepository.findByItem_Owner_IdAndStatus(anyLong(), any()))
+                .thenReturn(List.of(booking));
+
+        List<BookingResponseDto> bookings = bookingService.getBookingByOwner(1, BookingStateIn.WAITING, 0, 10);
+
+        assertThat(bookings.size(), equalTo(List.of(booking).size()));
     }
 }
