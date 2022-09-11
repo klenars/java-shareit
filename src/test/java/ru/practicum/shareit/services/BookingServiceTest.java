@@ -90,9 +90,10 @@ class BookingServiceTest {
         assertThat(bookingResponseDto.getItem(), equalTo(booking.getItem()));
         assertThat(bookingResponseDto.getBooker(), equalTo(booking.getBooker()));
 
-        Assertions.assertThrows(UserValidationException.class, () -> {
-            bookingService.createBooking(888L, bookingRequestDto);
-        });
+        Assertions.assertThrows(
+                UserValidationException.class,
+                () -> bookingService.createBooking(888L, bookingRequestDto)
+        );
     }
 
     @Test
@@ -117,13 +118,13 @@ class BookingServiceTest {
     @Test
     void getBookingById() {
         Mockito
-                .when(bookingRepository.save(any()))
+                .when(bookingRepository.getReferenceById(any()))
                 .thenReturn(booking);
         Mockito
                 .when(itemRepository.getReferenceById(anyLong()))
                 .thenReturn(item);
 
-        BookingResponseDto bookingResponseDto = bookingService.createBooking(1L, bookingRequestDto);
+        BookingResponseDto bookingResponseDto = bookingService.getBookingById(user.getId(), 1);
 
         assertThat(bookingResponseDto.getId(), equalTo(booking.getId()));
         assertThat(bookingResponseDto.getStart(), equalTo(booking.getStart()));
