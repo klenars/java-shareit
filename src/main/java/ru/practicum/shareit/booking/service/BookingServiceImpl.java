@@ -162,9 +162,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private int getPageNumber(int from, int size) {
-        if (from < 0) {
-            throw new FieldValidationException("parameter from must not be less than zero");
-        }
         return from / size;
     }
 }

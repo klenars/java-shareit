@@ -1,16 +1,20 @@
 package ru.practicum.shareit.booking.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.dto.BookingStateIn;
 import ru.practicum.shareit.booking.service.BookingService;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping(path = "/bookings")
 public class BookingController {
 
@@ -45,8 +49,8 @@ public class BookingController {
     public List<BookingResponseDto> getBookingByUser(
             @RequestHeader("X-Sharer-User-Id") long userId,
             @RequestParam(required = false, defaultValue = "ALL") BookingStateIn state,
-            @RequestParam(defaultValue = "0") int from,
-            @RequestParam(defaultValue = "10") int size
+            @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+            @Positive @RequestParam(defaultValue = "10") int size
     ) {
         return bookingService.getBookingByUser(userId, state, from, size);
     }
@@ -55,8 +59,8 @@ public class BookingController {
     public List<BookingResponseDto> getBookingByOwner(
             @RequestHeader("X-Sharer-User-Id") long ownerId,
             @RequestParam(required = false, defaultValue = "ALL") BookingStateIn state,
-            @RequestParam(defaultValue = "0") int from,
-            @RequestParam(defaultValue = "10") int size
+            @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+            @Positive @RequestParam(defaultValue = "10") int size
     ) {
         return bookingService.getBookingByOwner(ownerId, state, from, size);
     }
