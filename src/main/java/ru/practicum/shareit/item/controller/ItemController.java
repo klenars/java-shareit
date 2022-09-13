@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDtoOut;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -8,10 +9,13 @@ import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.service.ItemService;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping("/items")
 public class ItemController {
 
@@ -44,17 +48,21 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDtoWithBooking> getAllItemsByOwner(
-            @RequestHeader("X-Sharer-User-Id") long userId
+            @RequestHeader("X-Sharer-User-Id") long userId,
+            @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+            @Positive @RequestParam(defaultValue = "10") int size
     ) {
-        return itemService.getAllItemsByOwner(userId);
+        return itemService.getAllItemsByOwner(userId, from, size);
     }
 
     @GetMapping("/search")
     public List<ItemDto> getItemBySubstring(
             @RequestHeader("X-Sharer-User-Id") long userId,
-            @RequestParam String text
+            @RequestParam String text,
+            @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+            @Positive @RequestParam(defaultValue = "10") int size
     ) {
-        return itemService.getItemBySubstring(userId, text);
+        return itemService.getItemBySubstring(userId, text, from, size);
     }
 
     @PostMapping("/{itemId}/comment")

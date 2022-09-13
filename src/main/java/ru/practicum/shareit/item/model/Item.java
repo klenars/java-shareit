@@ -1,7 +1,9 @@
 package ru.practicum.shareit.item.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.practicum.shareit.requests.ItemRequest;
+import lombok.NoArgsConstructor;
+import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
@@ -9,6 +11,8 @@ import javax.persistence.*;
 @Entity
 @Table(name = "items")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Item {
 
     @Id

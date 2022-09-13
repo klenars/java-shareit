@@ -1,6 +1,8 @@
-package ru.practicum.shareit.requests;
+package ru.practicum.shareit.requests.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
@@ -9,6 +11,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "requests")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ItemRequest {
 
     @Id
@@ -21,6 +25,5 @@ public class ItemRequest {
     @JoinColumn(name = "requestor_id")
     private User requestor;
 
-    @Transient
     private LocalDateTime created;
 }
