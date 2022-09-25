@@ -46,7 +46,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     Booking findByItem_IdAndEndBeforeOrderByEndDesc(long id, LocalDateTime end);
 
     @Query("select b from Booking b where b.item.id = ?1 and b.start > ?2 order by b.start")
-    Booking findByItem_IdAndStartAfterOrderByStartAsc(long id, LocalDateTime start);
+    List<Booking> findByItem_IdAndStartAfterOrderByStartAsc(long id, LocalDateTime start);
 
     @Query("select (count(b) > 0) from Booking b where b.item.id = ?1 and b.booker.id = ?2 and b.end < ?3")
     boolean existsByItem_IdAndBooker_IdAndEndBefore(long itemId, long bookerId, LocalDateTime end);

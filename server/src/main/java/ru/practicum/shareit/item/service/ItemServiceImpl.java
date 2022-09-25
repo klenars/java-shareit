@@ -57,7 +57,7 @@ public class ItemServiceImpl implements ItemService {
             );
             itemDtoWithBooking.setNextBooking(
                     BookingMapper.mapBookingToDtoForItem(
-                            bookingRepository.findByItem_IdAndStartAfterOrderByStartAsc(item.getId(), LocalDateTime.now())
+                            bookingRepository.findByItem_IdAndStartAfterOrderByStartAsc(item.getId(), LocalDateTime.now()).stream().findAny().orElse(null)
                     )
             );
         }
@@ -102,7 +102,7 @@ public class ItemServiceImpl implements ItemService {
                     );
                     itemDtoWithBooking.setNextBooking(
                             BookingMapper.mapBookingToDtoForItem(
-                                    bookingRepository.findByItem_IdAndStartAfterOrderByStartAsc(item.getId(), LocalDateTime.now())
+                                    bookingRepository.findByItem_IdAndStartAfterOrderByStartAsc(item.getId(), LocalDateTime.now()).stream().findAny().orElse(null)
                             )
                     );
                     return itemDtoWithBooking;

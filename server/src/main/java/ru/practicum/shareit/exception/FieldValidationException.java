@@ -1,6 +1,6 @@
 package ru.practicum.shareit.exception;
 
-public class FieldValidationException extends RuntimeException{
+public class FieldValidationException extends RuntimeException {
     public FieldValidationException(String message) {
         super(message);
     }

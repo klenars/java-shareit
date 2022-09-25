@@ -164,7 +164,7 @@ class BookingRepositoryTest {
         Booking requestBooking = bookingRepository.findByItem_IdAndStartAfterOrderByStartAsc(
                 item.getId(),
                 LocalDateTime.now()
-        );
+        ).stream().findFirst().orElse(null);
         assertThat(requestBooking, equalTo(booking));
     }
 
